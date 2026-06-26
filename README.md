@@ -92,6 +92,7 @@ Guru buka halaman pengumpulan → lihat foto inline di browser → beri nilai + 
 | judul | string | |
 | deskripsi | text nullable | |
 | file_tugas | string nullable | file soal dari guru (pdf/doc/xlsx/jpg/png) |
+| deadline | datetime nullable | batas waktu pengumpulan, diset guru |
 | semester | tinyint | nilai: 1 atau 2 |
 | tahun_ajaran | string | contoh: "2024/2025" |
 | deleted_at | timestamp nullable | soft delete |
@@ -105,6 +106,7 @@ Guru buka halaman pengumpulan → lihat foto inline di browser → beri nilai + 
 | tugas_id | bigint FK → tugas.id | |
 | siswa_id | bigint FK → users.id | |
 | status | enum(belum_kumpul, sudah_kumpul, sudah_dinilai) | default: sudah_kumpul saat upload |
+| terlambat | boolean | otomatis diset saat siswa submit, true jika melewati deadline |
 | nilai | integer nullable | diisi guru setelah menilai |
 | catatan | text nullable | feedback dari guru |
 | created_at | timestamp | |
