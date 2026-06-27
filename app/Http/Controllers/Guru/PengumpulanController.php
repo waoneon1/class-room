@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Http\Controllers\Guru;
+
+use App\Http\Controllers\Controller;
+use App\Models\Pengumpulan;
+use App\Models\Tugas;
+use App\Models\User;
+use Illuminate\Http\Request;
+
+class PengumpulanController extends Controller
+{
+    public function index($tugasId)
+    {
+        $tugas = Tugas::where('guru_id', auth()->id())->findOrFail($tugasId);
+
+        $pengumpulan = Pengumpulan::with('siswa')
+            ->where('tugas_id', $tugas->id)
+            ->get()
+            ->keyBy('siswa_id');
+
+        $totalSiswa = User::role('siswa')->count();
+
+        return view('guru.pengumpulan.index', compact('tugas', 'pengumpulan', 'totalSiswa'));
+    }
+
+    public function show($pengumpulanId)
+    {
+        $pengumpulan = Pengumpulan::with(['siswa', 'tugas', 'files'])
+            ->whereHas('tugas', fn($q) => $q->where('guru_id', auth()->id()))
+            ->findOrFail($pengumpulanId);
+
+        return view('guru.pengumpulan.show', compact('pengumpulan'));
+    }
+
+    public function nilai(Request $request, $pengumpulanId)
+    {
+        $pengumpulan = Pengumpulan::whereHas('tugas', fn($q) => $q->where('guru_id', auth()->id()))
+            ->findOrFail($pengumpulanId);
+
+        $request->validate([
+            'nilai'   => 'required|integer|min:0|max:100',
+            'catatan' => 'nullable|string|max:500',
+        ]);
+
+        $pengumpulan->update([
+            'nilai'   => $request->nilai,
+            'catatan' => $request->catatan,
+            'status'  => 'sudah_dinilai',
+        ]);
+
+        return redirect()->route('guru.pengumpulan.show', $pengumpulan)
+            ->with('success', 'Nilai berhasil disimpan.');
+    }
+}

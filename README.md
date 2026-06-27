@@ -1,285 +1,59 @@
-# Planning: Sistem Classroom Berbasis Website
-**SDN Ketintang II Surabaya**  
-Stack: Laravel + Tailwind CSS + MySQL
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
----
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-## 1. Tech Stack
+## About Laravel
 
-| Layer | Tech |
-|-------|------|
-| Backend | Laravel 11 (PHP) |
-| Frontend | Blade + Tailwind CSS v3 |
-| Database | MySQL |
-| Auth & Role | Laravel Breeze + Spatie Laravel Permission |
-| File Storage | Laravel Storage (local disk) |
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
----
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-## 2. Roles & Akses
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-| Role | Deskripsi |
-|------|-----------|
-| `admin` | Kelola pengguna, kelas, mata pelajaran |
-| `guru` | Kelola materi, tugas, beri nilai, lihat foto jawaban siswa |
-| `siswa` | Lihat materi, download soal, upload foto jawaban, lihat nilai |
+## Learning Laravel
 
----
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
-## 3. Workflow Upload Tugas
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-```
-Guru upload soal (pdf/doc/xlsx/jpg/png)
-        ↓
-Siswa download soal → kerjakan di kertas → foto → upload foto (jpg/png, bisa lebih dari 1)
-        ↓
-Guru buka halaman pengumpulan → lihat foto inline di browser → beri nilai + catatan
-```
+## Laravel Sponsors
 
----
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-## 4. Database Schema
+### Premium Partners
 
-### Tabel: `users`
-| Kolom | Tipe | Keterangan |
-|-------|------|------------|
-| id | bigint PK | |
-| nama_lengkap | string | |
-| username | string unique | |
-| email | string unique | |
-| password | string | hashed |
-| role | enum(admin, guru, siswa) | |
-| kelas_id | bigint FK nullable | hanya untuk siswa |
-| deleted_at | timestamp nullable | soft delete |
-| created_at | timestamp | |
-| updated_at | timestamp | |
+- **[Vehikl](https://vehikl.com)**
+- **[Tighten Co.](https://tighten.co)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Redberry](https://redberry.international/laravel-development)**
+- **[Active Logic](https://activelogic.com)**
 
-### Tabel: `kelas`
-| Kolom | Tipe | Keterangan |
-|-------|------|------------|
-| id | bigint PK | |
-| nama_kelas | string | contoh: "Kelas 4A" |
-| created_at | timestamp | |
-| updated_at | timestamp | |
+## Contributing
 
-### Tabel: `mata_pelajaran`
-| Kolom | Tipe | Keterangan |
-|-------|------|------------|
-| id | bigint PK | |
-| nama_pelajaran | string | contoh: "Matematika" |
-| created_at | timestamp | |
-| updated_at | timestamp | |
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-### Tabel: `materi`
-| Kolom | Tipe | Keterangan |
-|-------|------|------------|
-| id | bigint PK | |
-| guru_id | bigint FK → users.id | |
-| mata_pelajaran_id | bigint FK → mata_pelajaran.id | |
-| judul | string | |
-| deskripsi | text nullable | |
-| file_materi | string nullable | path file (pdf/doc/xlsx/jpg/png) |
-| deleted_at | timestamp nullable | soft delete |
-| created_at | timestamp | |
-| updated_at | timestamp | |
+## Code of Conduct
 
-### Tabel: `tugas`
-| Kolom | Tipe | Keterangan |
-|-------|------|------------|
-| id | bigint PK | |
-| guru_id | bigint FK → users.id | |
-| mata_pelajaran_id | bigint FK → mata_pelajaran.id | |
-| judul | string | |
-| deskripsi | text nullable | |
-| file_tugas | string nullable | file soal dari guru (pdf/doc/xlsx/jpg/png) |
-| deadline | datetime nullable | batas waktu pengumpulan, diset guru |
-| semester | tinyint | nilai: 1 atau 2 |
-| tahun_ajaran | string | contoh: "2024/2025" |
-| deleted_at | timestamp nullable | soft delete |
-| created_at | timestamp | |
-| updated_at | timestamp | |
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-### Tabel: `pengumpulan`
-| Kolom | Tipe | Keterangan |
-|-------|------|------------|
-| id | bigint PK | |
-| tugas_id | bigint FK → tugas.id | |
-| siswa_id | bigint FK → users.id | |
-| status | enum(belum_kumpul, sudah_kumpul, sudah_dinilai) | default: sudah_kumpul saat upload |
-| terlambat | boolean | otomatis diset saat siswa submit, true jika melewati deadline |
-| nilai | integer nullable | diisi guru setelah menilai |
-| catatan | text nullable | feedback dari guru |
-| created_at | timestamp | |
-| updated_at | timestamp | |
+## Security Vulnerabilities
 
-### Tabel: `pengumpulan_files` ← BARU
-| Kolom | Tipe | Keterangan |
-|-------|------|------------|
-| id | bigint PK | |
-| pengumpulan_id | bigint FK → pengumpulan.id | |
-| file_path | string | path foto jawaban (jpg/png) |
-| urutan | tinyint | urutan halaman, default: 1 |
-| created_at | timestamp | |
-| updated_at | timestamp | |
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-> **Catatan Soft Delete:** `tugas` dan `materi` menggunakan SoftDeletes. Jika tugas dihapus,
-> `pengumpulan` dan `pengumpulan_files` tetap ada di database (tidak ikut terhapus).
-> Gunakan `withTrashed()` jika perlu menampilkan data historis.
+## License
 
----
-
-## 5. Routes
-
-### Auth (semua role)
-```
-GET  /login
-POST /login
-POST /logout
-```
-
-### Admin
-```
-GET|POST         /admin/pengguna
-GET|POST         /admin/pengguna/create
-GET|POST|DELETE  /admin/pengguna/{id}
-
-GET|POST         /admin/kelas
-GET|POST         /admin/kelas/create
-GET|POST|DELETE  /admin/kelas/{id}
-
-GET|POST         /admin/mata-pelajaran
-GET|POST         /admin/mata-pelajaran/create
-GET|POST|DELETE  /admin/mata-pelajaran/{id}
-
-GET              /admin/rekap-nilai                    ← rekap nilai semua siswa
-                                                         ?semester=1&tahun_ajaran=2024/2025
-                                                         ?mata_pelajaran_id=1
-```
-
-### Guru
-```
-GET              /guru/dashboard
-GET|POST         /guru/materi
-GET|POST         /guru/materi/create
-GET|POST|DELETE  /guru/materi/{id}
-
-GET|POST         /guru/tugas
-GET|POST         /guru/tugas/create
-GET|POST|DELETE  /guru/tugas/{id}
-
-GET              /guru/tugas/{id}/pengumpulan          ← lihat semua submission + counter sudah/belum kumpul
-GET              /guru/pengumpulan/{id}                ← lihat foto jawaban siswa (image viewer)
-POST             /guru/pengumpulan/{id}/nilai          ← beri nilai + catatan
-
-GET              /guru/rekap-nilai                     ← rekap nilai semua siswa
-                                                         ?semester=1&tahun_ajaran=2024/2025
-                                                         ?mata_pelajaran_id=1
-```
-
-### Siswa
-```
-GET              /siswa/dashboard
-GET              /siswa/materi                         ← lihat daftar materi
-GET              /siswa/materi/{id}                    ← detail + download file
-
-GET              /siswa/tugas                          ← lihat daftar tugas (+ badge status)
-GET              /siswa/tugas/{id}                     ← detail + download soal
-POST             /siswa/tugas/{id}/kumpul              ← upload foto jawaban (multiple)
-
-GET              /siswa/nilai                          ← lihat semua nilai + catatan guru
-```
-
----
-
-## 6. Laravel File Structure
-
-```
-app/
-├── Http/
-│   ├── Controllers/
-│   │   ├── Auth/
-│   │   │   └── LoginController.php
-│   │   ├── Admin/
-│   │   │   ├── PenggunaController.php
-│   │   │   ├── KelasController.php
-│   │   │   ├── MataPelajaranController.php
-│   │   │   └── RekapNilaiController.php
-│   │   ├── Guru/
-│   │   │   ├── MateriController.php
-│   │   │   ├── TugasController.php
-│   │   │   ├── PengumpulanController.php
-│   │   │   └── RekapNilaiController.php
-│   │   └── Siswa/
-│   │       ├── MateriController.php
-│   │       ├── TugasController.php
-│   │       └── NilaiController.php
-│   └── Middleware/
-│       └── RoleMiddleware.php
-├── Models/
-│   ├── User.php
-│   ├── Kelas.php
-│   ├── MataPelajaran.php
-│   ├── Materi.php
-│   ├── Tugas.php
-│   ├── Pengumpulan.php
-│   └── PengumpulanFile.php
-
-resources/views/
-├── auth/
-│   └── login.blade.php
-├── admin/
-│   ├── layout.blade.php
-│   ├── pengguna/            (index, create, edit)
-│   ├── kelas/               (index, create, edit)
-│   ├── mata-pelajaran/      (index, create, edit)
-│   └── rekap-nilai/         (index)
-├── guru/
-│   ├── layout.blade.php
-│   ├── materi/              (index, create, edit)
-│   ├── tugas/               (index, create, edit)
-│   ├── pengumpulan/         (index ← list + counter, show ← image viewer, nilai)
-│   └── rekap-nilai/         (index)
-└── siswa/
-    ├── layout.blade.php
-    ├── dashboard.blade.php
-    ├── materi/              (index, show)
-    ├── tugas/               (index, show ← + form upload foto)
-    └── nilai/               (index)
-```
-
----
-
-## 7. Model Relationships
-
-```php
-// User
-hasMany(Materi::class, 'guru_id')
-hasMany(Tugas::class, 'guru_id')
-hasMany(Pengumpulan::class, 'siswa_id')
-belongsTo(Kelas::class)
-
-// Materi — SoftDeletes
-belongsTo(User::class, 'guru_id')
-belongsTo(MataPelajaran::class)
-
-// Tugas — SoftDeletes
-belongsTo(User::class, 'guru_id')
-belongsTo(MataPelajaran::class)
-hasMany(Pengumpulan::class)
-
-// Pengumpulan
-belongsTo(Tugas::class)
-belongsTo(User::class, 'siswa_id')
-hasMany(PengumpulanFile::class)
-
-// PengumpulanFile
-belongsTo(Pengumpulan::class)
-
-// Kelas
-hasMany(User::class)
-
-// MataPelajaran
-hasMany(Materi::class)
-hasMany(Tugas::class)
-```
-
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
