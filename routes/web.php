@@ -18,6 +18,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::resource('pengguna', Admin\PenggunaController::class);
     Route::resource('kelas', Admin\KelasController::class);
     Route::resource('mata-pelajaran', Admin\MataPelajaranController::class);
+    Route::resource('periode', Admin\PeriodeController::class);
     Route::get('rekap-nilai', [Admin\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');
 });
 
@@ -38,5 +39,6 @@ Route::prefix('siswa')->name('siswa.')->middleware(['auth', 'role:siswa'])->grou
     Route::resource('materi', Siswa\MateriController::class)->only(['index', 'show']);
     Route::resource('tugas', Siswa\TugasController::class)->only(['index', 'show']);
     Route::post('tugas/{tugas}/kumpul', [Siswa\TugasController::class, 'kumpul'])->name('tugas.kumpul');
+    Route::delete('tugas/{tugas}/batal', [Siswa\TugasController::class, 'batal'])->name('tugas.batal');
     Route::get('nilai', [Siswa\NilaiController::class, 'index'])->name('nilai.index');
 });

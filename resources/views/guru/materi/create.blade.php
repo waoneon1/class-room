@@ -32,6 +32,21 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Kelas</label>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    @foreach($kelas as $k)
+                    <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" name="kelas_id[]" value="{{ $k->id }}"
+                            class="rounded text-primary focus:ring-primary w-4 h-4"
+                            {{ (is_array(old('kelas_id')) && in_array($k->id, old('kelas_id'))) ? 'checked' : '' }}>
+                        <span class="text-sm text-gray-700 font-medium">{{ $k->nama_kelas }}</span>
+                    </label>
+                    @endforeach
+                </div>
+                @error('kelas_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Judul Materi</label>
                 <input type="text" name="judul" value="{{ old('judul') }}"
                     class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary @error('judul') border-red-400 @enderror"

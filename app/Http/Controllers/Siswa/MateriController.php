@@ -9,7 +9,13 @@ class MateriController extends Controller
 {
     public function index()
     {
-        $materi = Materi::with(['guru', 'mataPelajaran'])->latest()->get();
+        $kelasId = auth()->user()->kelas_id;
+        $materi = Materi::with(['guru', 'mataPelajaran'])
+            ->whereHas('kelas', function($q) use ($kelasId) {
+                $q->where('kelas.id', $kelasId);
+            })
+            ->latest()
+            ->get();
         return view('siswa.materi.index', compact('materi'));
     }
 

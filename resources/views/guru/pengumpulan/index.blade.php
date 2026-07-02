@@ -11,7 +11,7 @@
         Kembali ke Tugas
     </a>
     <h1 class="text-xl font-bold text-gray-800">{{ $tugas->judul }}</h1>
-    <p class="text-sm text-gray-500 mt-0.5">{{ $tugas->mataPelajaran->nama_pelajaran }} · Semester {{ $tugas->semester }} · {{ $tugas->tahun_ajaran }}</p>
+    <p class="text-sm text-gray-500 mt-0.5">{{ $tugas->mataPelajaran->nama_pelajaran }} · {{ $tugas->periode?->nama_periode ?? 'Tanpa Periode' }}</p>
 </div>
 
 {{-- Counter --}}

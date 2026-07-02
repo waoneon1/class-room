@@ -7,13 +7,20 @@ use App\Models\Pengumpulan;
 use App\Models\PengumpulanFile;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TugasController extends Controller
 {
     public function index()
     {
-        $tugasList = Tugas::with(['guru', 'mataPelajaran'])->latest()->get();
         $siswaId   = auth()->id();
+        $kelasId   = auth()->user()->kelas_id;
+        $tugasList = Tugas::with(['guru', 'mataPelajaran'])
+            ->whereHas('kelas', function($q) use ($kelasId) {
+                $q->where('kelas.id', $kelasId);
+            })
+            ->latest()
+            ->get();
 
         // Map status pengumpulan per tugas untuk siswa ini
         $statusMap = Pengumpulan::where('siswa_id', $siswaId)
@@ -75,5 +82,29 @@ class TugasController extends Controller
             : 'Tugas berhasil dikumpulkan!';
 
         return redirect()->route('siswa.tugas.show', $id)->with('success', $msg);
+    }
+
+    public function batal($id)
+    {
+        $pengumpulan = Pengumpulan::where('tugas_id', $id)
+            ->where('siswa_id', auth()->id())
+            ->firstOrFail();
+
+        if ($pengumpulan->status === 'sudah_dinilai') {
+            return redirect()->route('siswa.tugas.show', $id)
+                ->with('error', 'Tugas yang sudah dinilai tidak dapat dibatalkan.');
+        }
+
+        foreach ($pengumpulan->files as $file) {
+            if ($file->file_path) {
+                Storage::disk('public')->delete($file->file_path);
+            }
+            $file->delete();
+        }
+
+        $pengumpulan->delete();
+
+        return redirect()->route('siswa.tugas.show', $id)
+            ->with('success', 'Pengumpulan tugas berhasil dibatalkan.');
     }
 }

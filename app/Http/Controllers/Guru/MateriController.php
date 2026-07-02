@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Guru;
 use App\Http\Controllers\Controller;
 use App\Models\Materi;
 use App\Models\MataPelajaran;
+use App\Models\Periode;
+use App\Models\Kelas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -22,7 +24,8 @@ class MateriController extends Controller
     public function create()
     {
         $mapel = MataPelajaran::orderBy('nama_pelajaran')->get();
-        return view('guru.materi.create', compact('mapel'));
+        $kelas = Kelas::orderBy('nama_kelas')->get();
+        return view('guru.materi.create', compact('mapel', 'kelas'));
     }
 
     public function store(Request $request)
@@ -32,15 +35,19 @@ class MateriController extends Controller
             'judul'             => 'required|string|max:255',
             'deskripsi'         => 'nullable|string',
             'file_materi'       => 'nullable|file|mimes:pdf,doc,docx,xlsx,xls,jpg,jpeg,png|max:10240',
+            'kelas_id'          => 'required|array|min:1',
+            'kelas_id.*'        => 'exists:kelas,id',
         ]);
 
         $data['guru_id'] = auth()->id();
+        $data['periode_id'] = Periode::where('is_active', true)->value('id');
 
         if ($request->hasFile('file_materi')) {
             $data['file_materi'] = $request->file('file_materi')->store('uploads/materi', 'public');
         }
 
-        Materi::create($data);
+        $materi = Materi::create($data);
+        $materi->kelas()->sync($request->kelas_id);
 
         return redirect()->route('guru.materi.index')->with('success', 'Materi berhasil ditambahkan.');
     }
@@ -52,9 +59,10 @@ class MateriController extends Controller
 
     public function edit($id)
     {
-        $materi = Materi::where('guru_id', auth()->id())->findOrFail($id);
+        $materi = Materi::with('kelas')->where('guru_id', auth()->id())->findOrFail($id);
         $mapel  = MataPelajaran::orderBy('nama_pelajaran')->get();
-        return view('guru.materi.edit', compact('materi', 'mapel'));
+        $kelas = Kelas::orderBy('nama_kelas')->get();
+        return view('guru.materi.edit', compact('materi', 'mapel', 'kelas'));
     }
 
     public function update(Request $request, $id)
@@ -66,6 +74,8 @@ class MateriController extends Controller
             'judul'             => 'required|string|max:255',
             'deskripsi'         => 'nullable|string',
             'file_materi'       => 'nullable|file|mimes:pdf,doc,docx,xlsx,xls,jpg,jpeg,png|max:10240',
+            'kelas_id'          => 'required|array|min:1',
+            'kelas_id.*'        => 'exists:kelas,id',
         ]);
 
         if ($request->hasFile('file_materi')) {
@@ -76,6 +86,7 @@ class MateriController extends Controller
         }
 
         $materi->update($data);
+        $materi->kelas()->sync($request->kelas_id);
 
         return redirect()->route('guru.materi.index')->with('success', 'Materi berhasil diperbarui.');
     }

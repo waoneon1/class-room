@@ -12,17 +12,14 @@
 <div class="bg-white rounded-2xl shadow-sm p-5 mb-6">
     <form method="GET" action="{{ route('guru.rekap-nilai.index') }}" class="flex flex-wrap gap-3 items-end">
         <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">Semester</label>
-            <select name="semester" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                <option value="1" {{ $semester == 1 ? 'selected' : '' }}>Semester 1</option>
-                <option value="2" {{ $semester == 2 ? 'selected' : '' }}>Semester 2</option>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Periode</label>
+            <select name="periode_id" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                @foreach($periodes as $p)
+                    <option value="{{ $p->id }}" {{ $periodeId == $p->id ? 'selected' : '' }}>
+                        {{ $p->nama_periode }} {{ $p->is_active ? '(Aktif)' : '' }}
+                    </option>
+                @endforeach
             </select>
-        </div>
-        <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">Tahun Ajaran</label>
-            <input type="text" name="tahun_ajaran" value="{{ $tahunAjaran }}"
-                class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="2025/2026">
         </div>
         <div>
             <label class="block text-xs font-medium text-gray-500 mb-1">Mata Pelajaran</label>

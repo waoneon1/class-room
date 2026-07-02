@@ -33,7 +33,7 @@
                     @endif
                 </div>
                 <h3 class="font-bold text-gray-800">{{ $n->tugas->judul }}</h3>
-                <p class="text-xs text-gray-400 mt-0.5">{{ $n->tugas->guru->nama_lengkap }} · Semester {{ $n->tugas->semester }} · {{ $n->tugas->tahun_ajaran }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ $n->tugas->guru->nama_lengkap }} · {{ $n->tugas->periode?->nama_periode ?? 'Tanpa Periode' }}</p>
 
                 @if($n->catatan)
                 <div class="mt-3 bg-gray-50 rounded-xl px-4 py-2.5">
