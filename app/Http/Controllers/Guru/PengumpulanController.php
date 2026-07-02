@@ -50,7 +50,7 @@ class PengumpulanController extends Controller
             'status'  => 'sudah_dinilai',
         ]);
 
-        return redirect()->route('guru.pengumpulan.show', $pengumpulan)
+        return redirect()->route('guru.pengumpulan.index', $pengumpulan->tugas_id)
             ->with('success', 'Nilai berhasil disimpan.');
     }
 }
