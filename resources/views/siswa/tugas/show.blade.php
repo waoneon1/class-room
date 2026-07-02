@@ -121,12 +121,14 @@
                         Foto Jawaban
                         <span class="text-gray-400 font-normal">(bisa lebih dari 1)</span>
                     </label>
-                    <input type="file" name="foto[]" accept="image/jpg,image/jpeg,image/png"
+                    <input type="file" name="foto[]" id="foto-upload" accept="image/jpg,image/jpeg,image/png"
                            multiple required
                            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary @error('foto') border-red-400 @enderror @error('foto.*') border-red-400 @enderror">
                     @error('foto')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     @error('foto.*')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
+                
+                <div id="image-preview" class="grid grid-cols-2 gap-2 mt-3 empty:hidden"></div>
 
                 <button type="submit"
                     class="w-full mt-5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
@@ -134,6 +136,28 @@
                 </button>
             </form>
         </div>
+
+        <script>
+            document.getElementById('foto-upload').addEventListener('change', function(e) {
+                const previewContainer = document.getElementById('image-preview');
+                previewContainer.innerHTML = ''; // Reset
+
+                if (this.files) {
+                    Array.from(this.files).forEach(file => {
+                        if (file.type.match('image.*')) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                const img = document.createElement('img');
+                                img.src = e.target.result;
+                                img.className = 'w-full h-24 object-cover rounded-lg border border-gray-200';
+                                previewContainer.appendChild(img);
+                            }
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+            });
+        </script>
 
         @elseif($pengumpulan->status === 'sudah_dinilai')
         {{-- Tampilkan nilai --}}
@@ -171,6 +195,13 @@
                 @if($pengumpulan->terlambat)
                     <span class="mt-2 inline-block bg-red-100 text-red-600 text-xs px-3 py-1 rounded-full">Terlambat</span>
                 @endif
+                
+                <form method="POST" action="{{ route('siswa.tugas.batal', $tugas->id) }}" class="mt-5" onsubmit="return confirm('Apakah kamu yakin ingin membatalkan pengumpulan ini? Foto jawaban akan terhapus dan kamu harus mengulang kembali.')">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="w-full bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold py-2 rounded-xl transition-colors border border-red-100">
+                        Batalkan Pengumpulan
+                    </button>
+                </form>
             </div>
         </div>
         @endif

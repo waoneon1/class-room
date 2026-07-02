@@ -37,9 +37,7 @@
                 @endif
                 <div class="flex flex-wrap items-center gap-2 mt-3 text-xs text-gray-500">
                     <span class="bg-primary-light text-primary px-2 py-0.5 rounded-full">{{ $t->mataPelajaran->nama_pelajaran }}</span>
-                    <span>Semester {{ $t->semester }}</span>
-                    <span>·</span>
-                    <span>{{ $t->tahun_ajaran }}</span>
+                    <span>{{ $t->periode?->nama_periode ?? 'Tanpa Periode' }}</span>
                     @if($t->deadline)
                         <span>·</span>
                         @if(now()->gt($t->deadline))

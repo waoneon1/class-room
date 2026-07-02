@@ -17,6 +17,7 @@ class Materi extends Model
         'judul',
         'deskripsi',
         'file_materi',
+        'periode_id',
     ];
 
     public function guru()
@@ -27,5 +28,15 @@ class Materi extends Model
     public function mataPelajaran()
     {
         return $this->belongsTo(MataPelajaran::class);
+    }
+
+    public function periode()
+    {
+        return $this->belongsTo(Periode::class);
+    }
+
+    public function kelas()
+    {
+        return $this->belongsToMany(Kelas::class, 'kelas_materi');
     }
 }

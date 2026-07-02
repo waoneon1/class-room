@@ -12,16 +12,17 @@ class PengumpulanController extends Controller
 {
     public function index($tugasId)
     {
-        $tugas = Tugas::where('guru_id', auth()->id())->findOrFail($tugasId);
+        $tugas = Tugas::with('kelas')->where('guru_id', auth()->id())->findOrFail($tugasId);
 
         $pengumpulan = Pengumpulan::with('siswa')
             ->where('tugas_id', $tugas->id)
             ->get()
             ->keyBy('siswa_id');
 
-        $totalSiswa = User::role('siswa')->count();
+        $totalSiswa = User::role('siswa')->whereIn('kelas_id', $tugas->kelas->pluck('id'))->count();
+        $semuaSiswa = User::role('siswa')->whereIn('kelas_id', $tugas->kelas->pluck('id'))->orderBy('nama_lengkap')->get();
 
-        return view('guru.pengumpulan.index', compact('tugas', 'pengumpulan', 'totalSiswa'));
+        return view('guru.pengumpulan.index', compact('tugas', 'pengumpulan', 'totalSiswa', 'semuaSiswa'));
     }
 
     public function show($pengumpulanId)
@@ -49,7 +50,7 @@ class PengumpulanController extends Controller
             'status'  => 'sudah_dinilai',
         ]);
 
-        return redirect()->route('guru.pengumpulan.show', $pengumpulan)
+        return redirect()->route('guru.pengumpulan.index', $pengumpulan->tugas_id)
             ->with('success', 'Nilai berhasil disimpan.');
     }
 }
