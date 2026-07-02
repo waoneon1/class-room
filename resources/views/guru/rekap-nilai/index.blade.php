@@ -22,6 +22,17 @@
             </select>
         </div>
         <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Kelas</label>
+            <select name="kelas_id" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">Semua Kelas</option>
+                @foreach($kelasGuru as $k)
+                    <option value="{{ $k->id }}" {{ request('kelas_id') == $k->id ? 'selected' : '' }}>
+                        {{ $k->nama_kelas }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div>
             <label class="block text-xs font-medium text-gray-500 mb-1">Mata Pelajaran</label>
             <select name="mata_pelajaran_id" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value="">Semua</option>
@@ -36,9 +47,9 @@
     </form>
 </div>
 
-@if($rekap->isEmpty())
+@if($siswaList->isEmpty())
     <div class="bg-white rounded-2xl shadow-sm p-10 text-center text-gray-400 text-sm">
-        Belum ada data nilai untuk filter yang dipilih.
+        Belum ada data siswa untuk filter yang dipilih.
     </div>
 @else
 <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -53,31 +64,46 @@
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-50">
-            @foreach($rekap as $siswaId => $nilaiList)
-            @foreach($nilaiList as $n)
-            <tr class="hover:bg-gray-50 transition-colors">
-                @if($loop->first)
-                <td class="px-5 py-4 align-top" rowspan="{{ $nilaiList->count() }}">
-                    <p class="font-medium text-gray-800">{{ $n->siswa->nama_lengkap }}</p>
-                    <p class="text-xs text-gray-400">{{ $n->siswa->username }}</p>
-                </td>
-                @endif
-                <td class="px-5 py-4">{{ $n->tugas->judul }}</td>
-                <td class="px-5 py-4 text-gray-500">{{ $n->tugas->mataPelajaran->nama_pelajaran }}</td>
-                <td class="px-5 py-4 text-center">
-                    <span class="font-bold {{ $n->nilai >= 75 ? 'text-green-600' : ($n->nilai >= 60 ? 'text-yellow-600' : 'text-red-500') }}">
-                        {{ $n->nilai }}
-                    </span>
-                </td>
-                <td class="px-5 py-4 text-center">
-                    @if($n->terlambat)
-                        <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">Ya</span>
-                    @else
-                        <span class="text-gray-300">—</span>
+            @foreach($siswaList as $siswa)
+            @php $nilaiList = $pengumpulan->get($siswa->id, collect()); @endphp
+            @if($nilaiList->isEmpty())
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-5 py-4 align-top">
+                        <p class="font-medium text-gray-800">{{ $siswa->nama_lengkap }}</p>
+                        <p class="text-xs text-gray-400">{{ $siswa->username }}</p>
+                    </td>
+                    <td class="px-5 py-4 text-gray-400 italic text-center" colspan="4">Belum ada tugas dinilai</td>
+                </tr>
+            @else
+                @foreach($nilaiList as $n)
+                <tr class="hover:bg-gray-50 transition-colors">
+                    @if($loop->first)
+                    <td class="px-5 py-4 align-top" rowspan="{{ $nilaiList->count() }}">
+                        <p class="font-medium text-gray-800">{{ $siswa->nama_lengkap }}</p>
+                        <p class="text-xs text-gray-400">{{ $siswa->username }}</p>
+                    </td>
                     @endif
-                </td>
-            </tr>
-            @endforeach
+                    <td class="px-5 py-4">{{ $n->tugas->judul }}</td>
+                    <td class="px-5 py-4 text-gray-500">{{ $n->tugas->mataPelajaran->nama_pelajaran }}</td>
+                    <td class="px-5 py-4 text-center">
+                        @if($n->nilai !== null)
+                            <span class="font-bold {{ $n->nilai >= 75 ? 'text-green-600' : ($n->nilai >= 60 ? 'text-yellow-600' : 'text-red-500') }}">
+                                {{ $n->nilai }}
+                            </span>
+                        @else
+                            <span class="text-gray-400">—</span>
+                        @endif
+                    </td>
+                    <td class="px-5 py-4 text-center">
+                        @if($n->terlambat)
+                            <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">Ya</span>
+                        @else
+                            <span class="text-gray-300">—</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            @endif
             @endforeach
         </tbody>
     </table>

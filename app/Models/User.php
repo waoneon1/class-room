@@ -52,4 +52,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Pengumpulan::class, 'siswa_id');
     }
+
+    public function mengajarKelas()
+    {
+        return $this->belongsToMany(Kelas::class, 'guru_kelas', 'user_id', 'kelas_id');
+    }
 }

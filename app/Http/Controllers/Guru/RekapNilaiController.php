@@ -15,19 +15,27 @@ class RekapNilaiController extends Controller
         $mapel      = MataPelajaran::orderBy('nama_pelajaran')->get();
         $periodes   = Periode::orderBy('id', 'desc')->get();
         $periodeId  = $request->periode_id ?? Periode::where('is_active', true)->value('id');
+        $kelasGuru  = auth()->user()->mengajarKelas;
+        $kelasId    = $request->kelas_id;
 
-        $query = Pengumpulan::with(['siswa', 'tugas.mataPelajaran'])
-            ->where('status', 'sudah_dinilai')
+        $querySiswa = \App\Models\User::role('siswa')->whereIn('kelas_id', $kelasGuru->pluck('id'));
+        if ($kelasId) {
+            $querySiswa->where('kelas_id', $kelasId);
+        }
+        $siswaList = $querySiswa->orderBy('nama_lengkap')->get();
+
+        $pengumpulan = Pengumpulan::with(['tugas.mataPelajaran'])
+            ->whereIn('siswa_id', $siswaList->pluck('id'))
             ->whereHas('tugas', function ($q) use ($periodeId, $request) {
                 $q->where('guru_id', auth()->id())
                   ->where('periode_id', $periodeId);
                 if ($request->mata_pelajaran_id) {
                     $q->where('mata_pelajaran_id', $request->mata_pelajaran_id);
                 }
-            });
+            })
+            ->get()
+            ->groupBy('siswa_id');
 
-        $rekap = $query->get()->groupBy('siswa_id');
-
-        return view('guru.rekap-nilai.index', compact('mapel', 'periodes', 'rekap', 'periodeId'));
+        return view('guru.rekap-nilai.index', compact('mapel', 'periodes', 'periodeId', 'kelasGuru', 'kelasId', 'siswaList', 'pengumpulan'));
     }
 }

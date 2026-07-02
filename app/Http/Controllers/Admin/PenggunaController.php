@@ -32,11 +32,17 @@ class PenggunaController extends Controller
             'password'     => 'required|string|min:6|confirmed',
             'role'         => 'required|in:admin,guru,siswa',
             'kelas_id'     => 'nullable|exists:kelas,id',
+            'mengajar_kelas_id' => 'nullable|array',
+            'mengajar_kelas_id.*' => 'exists:kelas,id',
         ]);
 
         $data['password'] = Hash::make($data['password']);
         $user = User::create($data);
         $user->assignRole($data['role']);
+
+        if ($data['role'] === 'guru' && !empty($data['mengajar_kelas_id'])) {
+            $user->mengajarKelas()->sync($data['mengajar_kelas_id']);
+        }
 
         return redirect()->route('admin.pengguna.index')->with('success', 'Pengguna berhasil ditambahkan.');
     }
@@ -49,7 +55,7 @@ class PenggunaController extends Controller
 
     public function edit($id)
     {
-        $pengguna = User::findOrFail($id);
+        $pengguna = User::with('mengajarKelas')->findOrFail($id);
         $kelas    = Kelas::orderBy('nama_kelas')->get();
         return view('admin.pengguna.edit', compact('pengguna', 'kelas'));
     }
@@ -65,6 +71,8 @@ class PenggunaController extends Controller
             'password'     => 'nullable|string|min:6|confirmed',
             'role'         => 'required|in:admin,guru,siswa',
             'kelas_id'     => 'nullable|exists:kelas,id',
+            'mengajar_kelas_id' => 'nullable|array',
+            'mengajar_kelas_id.*' => 'exists:kelas,id',
         ]);
 
         if (empty($data['password'])) {
@@ -75,6 +83,12 @@ class PenggunaController extends Controller
 
         $pengguna->update($data);
         $pengguna->syncRoles([$data['role']]);
+
+        if ($data['role'] === 'guru') {
+            $pengguna->mengajarKelas()->sync($data['mengajar_kelas_id'] ?? []);
+        } else {
+            $pengguna->mengajarKelas()->sync([]);
+        }
 
         return redirect()->route('admin.pengguna.index')->with('success', 'Pengguna berhasil diperbarui.');
     }

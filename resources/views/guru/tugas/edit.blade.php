@@ -32,17 +32,30 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Kelas</label>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    @foreach($kelas as $k)
-                    <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                        <input type="checkbox" name="kelas_id[]" value="{{ $k->id }}"
-                            class="rounded text-primary focus:ring-primary w-4 h-4"
-                            {{ (is_array(old('kelas_id')) && in_array($k->id, old('kelas_id'))) || (!old('kelas_id') && $tugas->kelas->contains($k->id)) ? 'checked' : '' }}>
-                        <span class="text-sm text-gray-700 font-medium">{{ $k->nama_kelas }}</span>
-                    </label>
-                    @endforeach
-                </div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Kelas <span class="text-red-500">*</span></label>
+                @if($kelas->count() === 1)
+                    <div class="p-4 border border-gray-200 rounded-xl bg-gray-50 flex items-center justify-between">
+                        <div>
+                            <p class="font-bold text-gray-800">{{ $kelas->first()->nama_kelas }}</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Otomatis terpilih karena Anda hanya mengajar di satu kelas.</p>
+                        </div>
+                        <div class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <input type="hidden" name="kelas_id[]" value="{{ $kelas->first()->id }}">
+                    </div>
+                @else
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        @foreach($kelas as $k)
+                        <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="checkbox" name="kelas_id[]" value="{{ $k->id }}"
+                                class="rounded text-primary focus:ring-primary w-4 h-4"
+                                {{ (is_array(old('kelas_id')) && in_array($k->id, old('kelas_id'))) || (!old('kelas_id') && $tugas->kelas->contains($k->id)) ? 'checked' : '' }}>
+                            <span class="text-sm text-gray-700 font-medium">{{ $k->nama_kelas }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                @endif
                 @error('kelas_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
 

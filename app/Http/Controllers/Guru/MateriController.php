@@ -24,7 +24,7 @@ class MateriController extends Controller
     public function create()
     {
         $mapel = MataPelajaran::orderBy('nama_pelajaran')->get();
-        $kelas = Kelas::orderBy('nama_kelas')->get();
+        $kelas = auth()->user()->mengajarKelas()->orderBy('nama_kelas')->get();
         return view('guru.materi.create', compact('mapel', 'kelas'));
     }
 
@@ -61,7 +61,7 @@ class MateriController extends Controller
     {
         $materi = Materi::with('kelas')->where('guru_id', auth()->id())->findOrFail($id);
         $mapel  = MataPelajaran::orderBy('nama_pelajaran')->get();
-        $kelas = Kelas::orderBy('nama_kelas')->get();
+        $kelas = auth()->user()->mengajarKelas()->orderBy('nama_kelas')->get();
         return view('guru.materi.edit', compact('materi', 'mapel', 'kelas'));
     }
 

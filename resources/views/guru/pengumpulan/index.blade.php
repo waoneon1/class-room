@@ -28,10 +28,6 @@
 </div>
 
 {{-- List semua siswa dengan status --}}
-@php
-    $semuaSiswa = \App\Models\User::role('siswa')->orderBy('nama_lengkap')->get();
-@endphp
-
 <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
     <table class="w-full text-sm">
         <thead>

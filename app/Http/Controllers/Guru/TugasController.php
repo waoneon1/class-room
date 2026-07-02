@@ -24,7 +24,7 @@ class TugasController extends Controller
     public function create()
     {
         $mapel = MataPelajaran::orderBy('nama_pelajaran')->get();
-        $kelas = Kelas::orderBy('nama_kelas')->get();
+        $kelas = auth()->user()->mengajarKelas()->orderBy('nama_kelas')->get();
         return view('guru.tugas.create', compact('mapel', 'kelas'));
     }
 
@@ -62,7 +62,7 @@ class TugasController extends Controller
     {
         $tugas = Tugas::with('kelas')->where('guru_id', auth()->id())->findOrFail($id);
         $mapel = MataPelajaran::orderBy('nama_pelajaran')->get();
-        $kelas = Kelas::orderBy('nama_kelas')->get();
+        $kelas = auth()->user()->mengajarKelas()->orderBy('nama_kelas')->get();
         return view('guru.tugas.edit', compact('tugas', 'mapel', 'kelas'));
     }
 
