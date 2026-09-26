@@ -36,6 +36,7 @@ Route::prefix('guru')->name('guru.')->middleware(['auth', 'role:guru'])->group(f
 // Siswa
 Route::prefix('siswa')->name('siswa.')->middleware(['auth', 'role:siswa'])->group(function () {
     Route::get('dashboard', [Siswa\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('dashboard/{mata_pelajaran}', [Siswa\DashboardController::class, 'subject'])->name('dashboard.subject');
     Route::resource('materi', Siswa\MateriController::class)->only(['index', 'show']);
     Route::resource('tugas', Siswa\TugasController::class)->only(['index', 'show']);
     Route::post('tugas/{tugas}/kumpul', [Siswa\TugasController::class, 'kumpul'])->name('tugas.kumpul');

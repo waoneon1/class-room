@@ -13,9 +13,16 @@ class TugasController extends Controller
 {
     public function index()
     {
+        if (!request()->has('subject_id')) {
+            return redirect()->route('siswa.dashboard')->with('error', 'Silakan pilih mata pelajaran terlebih dahulu.');
+        }
+
         $siswaId   = auth()->id();
         $kelasId   = auth()->user()->kelas_id;
+        $subjectId = request('subject_id');
+
         $tugasList = Tugas::with(['guru', 'mataPelajaran'])
+            ->where('mata_pelajaran_id', $subjectId)
             ->whereHas('kelas', function($q) use ($kelasId) {
                 $q->where('kelas.id', $kelasId);
             })
@@ -24,6 +31,7 @@ class TugasController extends Controller
 
         // Map status pengumpulan per tugas untuk siswa ini
         $statusMap = Pengumpulan::where('siswa_id', $siswaId)
+            ->whereIn('tugas_id', $tugasList->pluck('id'))
             ->pluck('status', 'tugas_id');
 
         return view('siswa.tugas.index', compact('tugasList', 'statusMap'));
