@@ -61,28 +61,13 @@
                     class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary @error('kelas_id') border-red-400 @enderror">
                     <option value="">Pilih kelas</option>
                     @foreach($kelas as $k)
-                        <option value="{{ $k->id }}" {{ old('kelas_id', $pengguna->kelas_id) == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
+                        <option value="{{ $k->id }}" {{ old('kelas_id', $pengguna->kelas?->id) == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
                     @endforeach
                 </select>
                 @error('kelas_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
 
-            <div id="mengajarKelasField" class="{{ old('role', $pengguna->role) === 'guru' ? '' : 'hidden' }}">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Mengajar di Kelas <span class="text-red-500">*</span></label>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    @foreach($kelas as $k)
-                    <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                        <input type="checkbox" name="mengajar_kelas_id[]" value="{{ $k->id }}"
-                            class="rounded text-primary focus:ring-primary w-4 h-4"
-                            {{ (is_array(old('mengajar_kelas_id')) && in_array($k->id, old('mengajar_kelas_id'))) || (!old('mengajar_kelas_id') && $pengguna->mengajarKelas->contains($k->id)) ? 'checked' : '' }}>
-                        <span class="text-sm text-gray-700 font-medium">{{ $k->nama_kelas }}</span>
-                    </label>
-                    @endforeach
-                </div>
-                @error('mengajar_kelas_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Password Baru <span class="text-gray-400 font-normal">(opsional)</span></label>
                     <input type="password" name="password"
@@ -115,7 +100,6 @@
 <script>
 function toggleKelas(role) {
     document.getElementById('kelasField').classList.toggle('hidden', role !== 'siswa');
-    document.getElementById('mengajarKelasField').classList.toggle('hidden', role !== 'guru');
 }
 </script>
 @endsection

@@ -17,6 +17,19 @@
     </a>
 </div>
 
+<div class="mb-6 flex gap-3 items-center">
+    <form action="{{ route('guru.tugas.index') }}" method="GET" class="flex gap-2 w-full md:w-auto">
+        <select name="mapel_id" class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary min-w-[200px]" onchange="this.form.submit()">
+            <option value="">Semua Mata Pelajaran</option>
+            @foreach($mapels as $mapel)
+                <option value="{{ $mapel->id }}" {{ request('mapel_id') == $mapel->id ? 'selected' : '' }}>
+                    {{ $mapel->nama_pelajaran }}
+                </option>
+            @endforeach
+        </select>
+    </form>
+</div>
+
 <div class="space-y-4">
     @forelse($tugas as $t)
     <div class="bg-white rounded-2xl shadow-sm p-5">
@@ -25,7 +38,7 @@
                 <span class="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-medium">Tugas</span>
                 <h3 class="font-bold text-gray-800 mt-2">{{ $t->judul }}</h3>
                 @if($t->deskripsi)
-                    <p class="text-sm text-gray-500 mt-1">{{ Str::limit($t->deskripsi, 100) }}</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ \Illuminate\Support\Str::limit($t->deskripsi, 100) }}</p>
                 @endif
                 @if($t->file_tugas)
                 <div class="bg-gray-50 rounded-xl px-4 py-2.5 mt-3 text-sm text-gray-600 flex items-center gap-2 w-fit">

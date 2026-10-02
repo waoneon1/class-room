@@ -17,6 +17,19 @@
     </a>
 </div>
 
+<div class="mb-6 flex gap-3 items-center">
+    <form action="{{ route('guru.materi.index') }}" method="GET" class="flex gap-2 w-full md:w-auto">
+        <select name="mapel_id" class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary min-w-[200px]" onchange="this.form.submit()">
+            <option value="">Semua Mata Pelajaran</option>
+            @foreach($mapels as $mapel)
+                <option value="{{ $mapel->id }}" {{ request('mapel_id') == $mapel->id ? 'selected' : '' }}>
+                    {{ $mapel->nama_pelajaran }}
+                </option>
+            @endforeach
+        </select>
+    </form>
+</div>
+
 <div class="space-y-4">
     @forelse($materi as $m)
     <div class="bg-white rounded-2xl shadow-sm p-5">
@@ -25,7 +38,7 @@
                 <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-medium">Materi</span>
                 <h3 class="font-bold text-gray-800 mt-2">{{ $m->judul }}</h3>
                 @if($m->deskripsi)
-                    <p class="text-sm text-gray-500 mt-1">{{ Str::limit($m->deskripsi, 100) }}</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ \Illuminate\Support\Str::limit($m->deskripsi, 100) }}</p>
                 @endif
                 @if($m->file_materi)
                 <div class="bg-gray-50 rounded-xl px-4 py-2.5 mt-3 text-sm text-gray-600 flex items-center gap-2 w-fit">

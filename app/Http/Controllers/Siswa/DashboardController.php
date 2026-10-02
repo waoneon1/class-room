@@ -11,36 +11,29 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $mataPelajaran = MataPelajaran::all();
-        $kelasId = auth()->user()->kelas_id;
+        $periodeId = \App\Models\Periode::where('is_active', true)->value('id');
+        
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        // Ambil kelas aktif siswa di periode ini
+        $rombel = $user->rombel()->wherePivot('periode_id', $periodeId)->first();
+        $kelasId = $rombel ? $rombel->id : null;
 
         $gurusPerSubject = [];
-        
-        // From Materi
-        $materiGurus = \Illuminate\Support\Facades\DB::table('materi')
-            ->join('kelas_materi', 'materi.id', '=', 'kelas_materi.materi_id')
-            ->join('users', 'materi.guru_id', '=', 'users.id')
-            ->where('kelas_materi.kelas_id', $kelasId)
-            ->select('materi.mata_pelajaran_id', 'users.nama_lengkap')
-            ->distinct()
-            ->get();
+        $mataPelajaran = collect();
 
-        foreach ($materiGurus as $mg) {
-            $gurusPerSubject[$mg->mata_pelajaran_id] = $mg->nama_lengkap;
-        }
-
-        // From Tugas
-        $tugasGurus = \Illuminate\Support\Facades\DB::table('tugas')
-            ->join('kelas_tugas', 'tugas.id', '=', 'kelas_tugas.tugas_id')
-            ->join('users', 'tugas.guru_id', '=', 'users.id')
-            ->where('kelas_tugas.kelas_id', $kelasId)
-            ->select('tugas.mata_pelajaran_id', 'users.nama_lengkap')
-            ->distinct()
-            ->get();
-
-        foreach ($tugasGurus as $tg) {
-            if (!isset($gurusPerSubject[$tg->mata_pelajaran_id])) {
-                $gurusPerSubject[$tg->mata_pelajaran_id] = $tg->nama_lengkap;
+        if ($kelasId) {
+            // Ambil mapel dari jadwal mengajar di kelas dan periode tersebut
+            $jadwals = \App\Models\JadwalMengajar::with(['mataPelajaran', 'guru'])
+                ->where('kelas_id', $kelasId)
+                ->where('periode_id', $periodeId)
+                ->get();
+                
+            $mataPelajaran = $jadwals->pluck('mataPelajaran')->unique('id');
+            
+            foreach ($jadwals as $jadwal) {
+                $gurusPerSubject[$jadwal->mata_pelajaran_id] = $jadwal->guru->nama_lengkap;
             }
         }
 
@@ -49,11 +42,19 @@ class DashboardController extends Controller
 
     public function subject($id)
     {
-        $kelasId = auth()->user()->kelas_id;
+        $periodeId = \App\Models\Periode::where('is_active', true)->value('id');
+        
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        $rombel = $user->rombel()->wherePivot('periode_id', $periodeId)->first();
+        $kelasId = $rombel ? $rombel->id : null;
+        
         $mataPelajaran = MataPelajaran::findOrFail($id);
 
         $materi = Materi::with(['guru', 'mataPelajaran'])
             ->where('mata_pelajaran_id', $id)
+            ->where('periode_id', $periodeId)
             ->whereHas('kelas', function ($q) use ($kelasId) {
                 $q->where('kelas.id', $kelasId);
             })
@@ -62,6 +63,7 @@ class DashboardController extends Controller
 
         $tugas = Tugas::with(['guru', 'mataPelajaran'])
             ->where('mata_pelajaran_id', $id)
+            ->where('periode_id', $periodeId)
             ->whereHas('kelas', function ($q) use ($kelasId) {
                 $q->where('kelas.id', $kelasId);
             })

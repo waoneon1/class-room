@@ -4,27 +4,55 @@ namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
 use App\Models\Materi;
-use App\Models\MataPelajaran;
 use App\Models\Periode;
-use App\Models\Kelas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class MateriController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $materi = Materi::with('mataPelajaran')
-            ->where('guru_id', auth()->id())
-            ->latest()
-            ->get();
-        return view('guru.materi.index', compact('materi'));
+        $periodeId = Periode::where('is_active', true)->value('id');
+        
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        $query = Materi::with('mataPelajaran')
+            ->where('guru_id', $user->id)
+            ->where('periode_id', $periodeId);
+            
+        if ($request->filled('mapel_id')) {
+            $query->where('mata_pelajaran_id', $request->mapel_id);
+        }
+            
+        $materi = $query->latest()->get();
+        
+        // List mapel untuk filter
+        $mapels = $user->jadwalMengajar()
+            ->where('periode_id', $periodeId)
+            ->with('mataPelajaran')
+            ->get()
+            ->pluck('mataPelajaran')
+            ->unique('id');
+
+        return view('guru.materi.index', compact('materi', 'mapels'));
     }
 
     public function create()
     {
-        $mapel = MataPelajaran::orderBy('nama_pelajaran')->get();
-        $kelas = auth()->user()->mengajarKelas()->orderBy('nama_kelas')->get();
+        $periodeId = Periode::where('is_active', true)->value('id');
+        
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        $jadwal = $user->jadwalMengajar()
+            ->where('periode_id', $periodeId)
+            ->with(['mataPelajaran', 'kelas'])
+            ->get();
+            
+        $mapel = $jadwal->pluck('mataPelajaran')->unique('id');
+        $kelas = $jadwal->pluck('kelas')->unique('id');
+
         return view('guru.materi.create', compact('mapel', 'kelas'));
     }
 
@@ -39,7 +67,9 @@ class MateriController extends Controller
             'kelas_id.*'        => 'exists:kelas,id',
         ]);
 
-        $data['guru_id'] = auth()->id();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $data['guru_id'] = $user->id;
         $data['periode_id'] = Periode::where('is_active', true)->value('id');
 
         if ($request->hasFile('file_materi')) {
@@ -59,15 +89,28 @@ class MateriController extends Controller
 
     public function edit($id)
     {
-        $materi = Materi::with('kelas')->where('guru_id', auth()->id())->findOrFail($id);
-        $mapel  = MataPelajaran::orderBy('nama_pelajaran')->get();
-        $kelas = auth()->user()->mengajarKelas()->orderBy('nama_kelas')->get();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        $periodeId = Periode::where('is_active', true)->value('id');
+        $materi = Materi::with('kelas')->where('guru_id', $user->id)->findOrFail($id);
+        
+        $jadwal = $user->jadwalMengajar()
+            ->where('periode_id', $periodeId)
+            ->with(['mataPelajaran', 'kelas'])
+            ->get();
+            
+        $mapel = $jadwal->pluck('mataPelajaran')->unique('id');
+        $kelas = $jadwal->pluck('kelas')->unique('id');
+        
         return view('guru.materi.edit', compact('materi', 'mapel', 'kelas'));
     }
 
     public function update(Request $request, $id)
     {
-        $materi = Materi::where('guru_id', auth()->id())->findOrFail($id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $materi = Materi::where('guru_id', $user->id)->findOrFail($id);
 
         $data = $request->validate([
             'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
@@ -93,7 +136,9 @@ class MateriController extends Controller
 
     public function destroy($id)
     {
-        $materi = Materi::where('guru_id', auth()->id())->findOrFail($id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $materi = Materi::where('guru_id', $user->id)->findOrFail($id);
         $materi->delete();
 
         return redirect()->route('guru.materi.index')->with('success', 'Materi berhasil dihapus.');

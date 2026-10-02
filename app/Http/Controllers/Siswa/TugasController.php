@@ -17,12 +17,19 @@ class TugasController extends Controller
             return redirect()->route('siswa.dashboard')->with('error', 'Silakan pilih mata pelajaran terlebih dahulu.');
         }
 
-        $siswaId   = auth()->id();
-        $kelasId   = auth()->user()->kelas_id;
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $siswaId   = $user->id;
+        $periodeId = \App\Models\Periode::where('is_active', true)->value('id');
+        
+        $rombel = $user->rombel()->wherePivot('periode_id', $periodeId)->first();
+        $kelasId = $rombel ? $rombel->id : null;
+        
         $subjectId = request('subject_id');
 
         $tugasList = Tugas::with(['guru', 'mataPelajaran'])
             ->where('mata_pelajaran_id', $subjectId)
+            ->where('periode_id', $periodeId)
             ->whereHas('kelas', function($q) use ($kelasId) {
                 $q->where('kelas.id', $kelasId);
             })
@@ -39,9 +46,12 @@ class TugasController extends Controller
 
     public function show($id)
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
         $tugas       = Tugas::with(['guru', 'mataPelajaran'])->findOrFail($id);
         $pengumpulan = Pengumpulan::where('tugas_id', $id)
-            ->where('siswa_id', auth()->id())
+            ->where('siswa_id', $user->id)
             ->with('files')
             ->first();
 
@@ -50,11 +60,13 @@ class TugasController extends Controller
 
     public function kumpul(Request $request, $id)
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
         $tugas = Tugas::findOrFail($id);
 
         // Cek apakah sudah pernah kumpul
         $existing = Pengumpulan::where('tugas_id', $id)
-            ->where('siswa_id', auth()->id())
+            ->where('siswa_id', $user->id)
             ->first();
 
         if ($existing) {
@@ -71,7 +83,7 @@ class TugasController extends Controller
 
         $pengumpulan = Pengumpulan::create([
             'tugas_id'  => $tugas->id,
-            'siswa_id'  => auth()->id(),
+            'siswa_id'  => $user->id,
             'status'    => 'sudah_kumpul',
             'terlambat' => $terlambat,
         ]);
@@ -94,8 +106,11 @@ class TugasController extends Controller
 
     public function batal($id)
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
         $pengumpulan = Pengumpulan::where('tugas_id', $id)
-            ->where('siswa_id', auth()->id())
+            ->where('siswa_id', $user->id)
             ->firstOrFail();
 
         if ($pengumpulan->status === 'sudah_dinilai') {

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Periode;
 
 class User extends Authenticatable
 {
@@ -18,7 +19,6 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'kelas_id',
     ];
 
     protected $hidden = [
@@ -33,9 +33,16 @@ class User extends Authenticatable
         ];
     }
 
-    public function kelas()
+    public function rombel()
     {
-        return $this->belongsTo(Kelas::class);
+        return $this->belongsToMany(Kelas::class, 'siswa_kelas_periode')
+                    ->withPivot('periode_id')
+                    ->withTimestamps();
+    }
+
+    public function jadwalMengajar()
+    {
+        return $this->hasMany(JadwalMengajar::class, 'user_id');
     }
 
     public function materi()
@@ -53,8 +60,12 @@ class User extends Authenticatable
         return $this->hasMany(Pengumpulan::class, 'siswa_id');
     }
 
-    public function mengajarKelas()
+    public function getKelasAttribute()
     {
-        return $this->belongsToMany(Kelas::class, 'guru_kelas', 'user_id', 'kelas_id');
+        if ($this->role === 'siswa') {
+            $periodeId = Periode::where('is_active', true)->value('id');
+            return $this->rombel()->wherePivot('periode_id', $periodeId)->first();
+        }
+        return null;
     }
 }

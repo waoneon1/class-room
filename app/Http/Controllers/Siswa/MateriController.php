@@ -13,11 +13,19 @@ class MateriController extends Controller
             return redirect()->route('siswa.dashboard')->with('error', 'Silakan pilih mata pelajaran terlebih dahulu.');
         }
 
-        $kelasId = auth()->user()->kelas_id;
+        $periodeId = \App\Models\Periode::where('is_active', true)->value('id');
+        
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        $rombel = $user->rombel()->wherePivot('periode_id', $periodeId)->first();
+        $kelasId = $rombel ? $rombel->id : null;
+        
         $subjectId = request('subject_id');
 
         $materi = Materi::with(['guru', 'mataPelajaran'])
             ->where('mata_pelajaran_id', $subjectId)
+            ->where('periode_id', $periodeId)
             ->whereHas('kelas', function($q) use ($kelasId) {
                 $q->where('kelas.id', $kelasId);
             })

@@ -13,7 +13,12 @@ class PenggunaController extends Controller
 {
     public function index()
     {
-        $pengguna = User::with('kelas')->orderBy('role')->orderBy('nama_lengkap')->get();
+        $pengguna = User::with(['rombel' => function($q) {
+            $periodeId = \App\Models\Periode::where('is_active', true)->value('id');
+            if ($periodeId) {
+                $q->wherePivot('periode_id', $periodeId);
+            }
+        }])->orderBy('role')->orderBy('nama_lengkap')->get();
         return view('admin.pengguna.index', compact('pengguna'));
     }
 
@@ -32,16 +37,21 @@ class PenggunaController extends Controller
             'password'     => 'required|string|min:6|confirmed',
             'role'         => 'required|in:admin,guru,siswa',
             'kelas_id'     => 'nullable|exists:kelas,id',
-            'mengajar_kelas_id' => 'nullable|array',
-            'mengajar_kelas_id.*' => 'exists:kelas,id',
         ]);
 
         $data['password'] = Hash::make($data['password']);
+        
+        $kelasId = $data['kelas_id'] ?? null;
+        unset($data['kelas_id']); // Not in fillable anymore
+        
         $user = User::create($data);
         $user->assignRole($data['role']);
 
-        if ($data['role'] === 'guru' && !empty($data['mengajar_kelas_id'])) {
-            $user->mengajarKelas()->sync($data['mengajar_kelas_id']);
+        if ($data['role'] === 'siswa' && $kelasId) {
+            $periodeId = \App\Models\Periode::where('is_active', true)->value('id');
+            if ($periodeId) {
+                $user->rombel()->attach($kelasId, ['periode_id' => $periodeId]);
+            }
         }
 
         return redirect()->route('admin.pengguna.index')->with('success', 'Pengguna berhasil ditambahkan.');
@@ -55,7 +65,7 @@ class PenggunaController extends Controller
 
     public function edit($id)
     {
-        $pengguna = User::with('mengajarKelas')->findOrFail($id);
+        $pengguna = User::findOrFail($id);
         $kelas    = Kelas::orderBy('nama_kelas')->get();
         return view('admin.pengguna.edit', compact('pengguna', 'kelas'));
     }
@@ -71,8 +81,6 @@ class PenggunaController extends Controller
             'password'     => 'nullable|string|min:6|confirmed',
             'role'         => 'required|in:admin,guru,siswa',
             'kelas_id'     => 'nullable|exists:kelas,id',
-            'mengajar_kelas_id' => 'nullable|array',
-            'mengajar_kelas_id.*' => 'exists:kelas,id',
         ]);
 
         if (empty($data['password'])) {
@@ -81,13 +89,19 @@ class PenggunaController extends Controller
             $data['password'] = Hash::make($data['password']);
         }
 
+        $kelasId = $data['kelas_id'] ?? null;
+        unset($data['kelas_id']);
+
         $pengguna->update($data);
         $pengguna->syncRoles([$data['role']]);
 
-        if ($data['role'] === 'guru') {
-            $pengguna->mengajarKelas()->sync($data['mengajar_kelas_id'] ?? []);
-        } else {
-            $pengguna->mengajarKelas()->sync([]);
+        if ($data['role'] === 'siswa' && $kelasId) {
+            $periodeId = \App\Models\Periode::where('is_active', true)->value('id');
+            if ($periodeId) {
+                // Hapus rombel di periode aktif, lalu set yang baru
+                $pengguna->rombel()->wherePivot('periode_id', $periodeId)->detach();
+                $pengguna->rombel()->attach($kelasId, ['periode_id' => $periodeId]);
+            }
         }
 
         return redirect()->route('admin.pengguna.index')->with('success', 'Pengguna berhasil diperbarui.');

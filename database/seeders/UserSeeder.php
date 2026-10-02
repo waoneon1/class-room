@@ -6,6 +6,8 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Kelas;
+use App\Models\MataPelajaran;
+use App\Models\Periode;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -41,8 +43,18 @@ class UserSeeder extends Seeder
         $guru->assignRole('guru');
         
         $kelas = Kelas::first();
-        if ($kelas) {
-            $guru->mengajarKelas()->sync([$kelas->id]);
+        $mapel = MataPelajaran::first();
+        $periode = Periode::first() ?? Periode::create([
+            'nama_periode' => 'Ganjil 2026/2027',
+            'is_active' => true
+        ]);
+
+        if ($kelas && $mapel && $periode) {
+            $guru->jadwalMengajar()->create([
+                'kelas_id' => $kelas->id,
+                'mata_pelajaran_id' => $mapel->id,
+                'periode_id' => $periode->id,
+            ]);
 
             $siswa1 = User::create([
                 'nama_lengkap' => 'Andi Pratama',
@@ -50,9 +62,9 @@ class UserSeeder extends Seeder
                 'email'        => 'siswa1@sekolah.com',
                 'password'     => bcrypt('password'),
                 'role'         => 'siswa',
-                'kelas_id'     => $kelas->id,
             ]);
             $siswa1->assignRole('siswa');
+            $siswa1->rombel()->attach($kelas->id, ['periode_id' => $periode->id]);
 
             $siswa2 = User::create([
                 'nama_lengkap' => 'Siti Rahayu',
@@ -60,9 +72,9 @@ class UserSeeder extends Seeder
                 'email'        => 'siswa2@sekolah.com',
                 'password'     => bcrypt('password'),
                 'role'         => 'siswa',
-                'kelas_id'     => $kelas->id,
             ]);
             $siswa2->assignRole('siswa');
+            $siswa2->rombel()->attach($kelas->id, ['periode_id' => $periode->id]);
         }
     }
 }

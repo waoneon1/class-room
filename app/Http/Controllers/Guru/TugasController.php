@@ -3,28 +3,55 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
-use App\Models\MataPelajaran;
 use App\Models\Tugas;
 use App\Models\Periode;
-use App\Models\Kelas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class TugasController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tugas = Tugas::with('mataPelajaran')
-            ->where('guru_id', auth()->id())
-            ->latest()
-            ->get();
-        return view('guru.tugas.index', compact('tugas'));
+        $periodeId = Periode::where('is_active', true)->value('id');
+        
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        $query = Tugas::with('mataPelajaran')
+            ->where('guru_id', $user->id)
+            ->where('periode_id', $periodeId);
+            
+        if ($request->filled('mapel_id')) {
+            $query->where('mata_pelajaran_id', $request->mapel_id);
+        }
+            
+        $tugas = $query->latest()->get();
+        
+        $mapels = $user->jadwalMengajar()
+            ->where('periode_id', $periodeId)
+            ->with('mataPelajaran')
+            ->get()
+            ->pluck('mataPelajaran')
+            ->unique('id');
+
+        return view('guru.tugas.index', compact('tugas', 'mapels'));
     }
 
     public function create()
     {
-        $mapel = MataPelajaran::orderBy('nama_pelajaran')->get();
-        $kelas = auth()->user()->mengajarKelas()->orderBy('nama_kelas')->get();
+        $periodeId = Periode::where('is_active', true)->value('id');
+        
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        $jadwal = $user->jadwalMengajar()
+            ->where('periode_id', $periodeId)
+            ->with(['mataPelajaran', 'kelas'])
+            ->get();
+            
+        $mapel = $jadwal->pluck('mataPelajaran')->unique('id');
+        $kelas = $jadwal->pluck('kelas')->unique('id');
+        
         return view('guru.tugas.create', compact('mapel', 'kelas'));
     }
 
@@ -40,7 +67,9 @@ class TugasController extends Controller
             'kelas_id.*'        => 'exists:kelas,id',
         ]);
 
-        $data['guru_id'] = auth()->id();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $data['guru_id'] = $user->id;
         $data['periode_id'] = Periode::where('is_active', true)->value('id');
 
         if ($request->hasFile('file_tugas')) {
@@ -60,15 +89,28 @@ class TugasController extends Controller
 
     public function edit($id)
     {
-        $tugas = Tugas::with('kelas')->where('guru_id', auth()->id())->findOrFail($id);
-        $mapel = MataPelajaran::orderBy('nama_pelajaran')->get();
-        $kelas = auth()->user()->mengajarKelas()->orderBy('nama_kelas')->get();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        $periodeId = Periode::where('is_active', true)->value('id');
+        $tugas = Tugas::with('kelas')->where('guru_id', $user->id)->findOrFail($id);
+        
+        $jadwal = $user->jadwalMengajar()
+            ->where('periode_id', $periodeId)
+            ->with(['mataPelajaran', 'kelas'])
+            ->get();
+            
+        $mapel = $jadwal->pluck('mataPelajaran')->unique('id');
+        $kelas = $jadwal->pluck('kelas')->unique('id');
+        
         return view('guru.tugas.edit', compact('tugas', 'mapel', 'kelas'));
     }
 
     public function update(Request $request, $id)
     {
-        $tugas = Tugas::where('guru_id', auth()->id())->findOrFail($id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $tugas = Tugas::where('guru_id', $user->id)->findOrFail($id);
 
         $data = $request->validate([
             'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
@@ -95,7 +137,9 @@ class TugasController extends Controller
 
     public function destroy($id)
     {
-        $tugas = Tugas::where('guru_id', auth()->id())->findOrFail($id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $tugas = Tugas::where('guru_id', $user->id)->findOrFail($id);
         $tugas->delete();
 
         return redirect()->route('guru.tugas.index')->with('success', 'Tugas berhasil dihapus.');
