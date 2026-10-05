@@ -1,4 +1,4 @@
-@extends('siswa.layout')
+@extends('siswa.layout_sidebar')
 
 @section('title', 'Materi')
 

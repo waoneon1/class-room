@@ -167,5 +167,6 @@
 
     if (window.innerWidth >= 768) applyCollapse();
 </script>
+@yield('scripts')
 </body>
 </html>

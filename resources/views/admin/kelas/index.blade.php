@@ -30,7 +30,7 @@
             @forelse($kelas as $k)
             <tr class="hover:bg-gray-50 transition-colors">
                 <td class="px-5 py-3.5 font-medium text-gray-800">{{ $k->nama_kelas }}</td>
-                <td class="px-5 py-3.5 text-gray-600">{{ $k->users_count }} siswa</td>
+                <td class="px-5 py-3.5 text-gray-600">{{ $k->siswa_count }} siswa</td>
                 <td class="px-5 py-3.5">
                     <div class="flex items-center justify-end gap-2">
                         <a href="{{ route('admin.kelas.edit', $k) }}"

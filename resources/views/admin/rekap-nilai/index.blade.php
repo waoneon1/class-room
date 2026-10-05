@@ -12,18 +12,15 @@
 <div class="bg-white rounded-2xl shadow-sm p-5 mb-6">
     <form method="GET" action="{{ route('admin.rekap-nilai.index') }}" class="flex flex-wrap gap-3 items-end">
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1.5">Semester</label>
-            <select name="semester" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                <option value="">Semua</option>
-                <option value="1" {{ ($filter['semester'] ?? '') == '1' ? 'selected' : '' }}>Semester 1</option>
-                <option value="2" {{ ($filter['semester'] ?? '') == '2' ? 'selected' : '' }}>Semester 2</option>
+            <label class="block text-xs font-medium text-gray-600 mb-1.5">Periode</label>
+            <select name="periode_id" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">Pilih Periode</option>
+                @foreach($periodes as $p)
+                    <option value="{{ $p->id }}" {{ ($filter['periode_id'] ?? '') == $p->id ? 'selected' : '' }}>
+                        {{ $p->nama_periode }} {{ $p->is_active ? '(Aktif)' : '' }}
+                    </option>
+                @endforeach
             </select>
-        </div>
-        <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1.5">Tahun Ajaran</label>
-            <input type="text" name="tahun_ajaran" value="{{ $filter['tahun_ajaran'] ?? '' }}"
-                placeholder="Contoh: 2024/2025"
-                class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary w-36">
         </div>
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1.5">Mata Pelajaran</label>

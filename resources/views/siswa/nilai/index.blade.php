@@ -1,59 +1,46 @@
-@extends('siswa.layout')
+@extends('siswa.layout_topbar')
 
-@section('title', 'Nilai')
+@section('title', 'Rekap Nilai')
 
 @section('content')
 <div class="mb-6">
-    <h1 class="text-xl font-bold text-gray-800">Nilai Kamu</h1>
-    <p class="text-sm text-gray-500 mt-0.5">Rekap nilai tugas yang sudah dinilai oleh guru</p>
+    <h1 class="text-xl font-bold text-gray-800">Rekap Nilai Keseluruhan</h1>
+    <p class="text-sm text-gray-500 mt-0.5">Rata-rata nilai per mata pelajaran</p>
 </div>
 
-@if($nilaiList->isEmpty())
-<div class="bg-white rounded-2xl shadow-sm p-10 text-center text-gray-400 text-sm max-w-2xl">
-    Belum ada nilai. Kumpulkan tugas dan tunggu guru menilai.
-</div>
-@else
-<div class="space-y-4 max-w-2xl">
-    @foreach($nilaiList as $n)
-    <div class="bg-white rounded-2xl shadow-sm p-5">
-        <div class="flex items-start gap-4">
-            {{-- Nilai bubble --}}
-            <div class="shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center
-                {{ $n->nilai >= 75 ? 'bg-green-100' : ($n->nilai >= 60 ? 'bg-yellow-100' : 'bg-red-100') }}">
-                <span class="text-2xl font-bold {{ $n->nilai >= 75 ? 'text-green-600' : ($n->nilai >= 60 ? 'text-yellow-600' : 'text-red-500') }}">
-                    {{ $n->nilai }}
-                </span>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @foreach($rekap as $r)
+    <a href="{{ route('siswa.nilai.index', ['subject_id' => $r['mata_pelajaran']->id]) }}" class="block group">
+        <div class="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md hover:border-primary border border-transparent transition-all h-full flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-gray-800 group-hover:text-primary transition-colors">{{ $r['mata_pelajaran']->nama_pelajaran }}</h3>
+                </div>
             </div>
-
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="bg-primary-light text-primary text-xs px-2 py-0.5 rounded-full">{{ $n->tugas->mataPelajaran->nama_pelajaran }}</span>
-                    @if($n->terlambat)
-                        <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">Terlambat</span>
+            
+            <div class="mt-auto flex items-end justify-between">
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">Tugas Dinilai</p>
+                    <p class="text-sm font-semibold text-gray-700">{{ $r['jumlah_tugas'] }} Tugas</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 mb-1">Rata-rata</p>
+                    @if($r['rata_rata'] !== null)
+                    <p class="text-2xl font-bold {{ $r['rata_rata'] >= 75 ? 'text-green-600' : ($r['rata_rata'] >= 60 ? 'text-yellow-600' : 'text-red-500') }}">
+                        {{ number_format($r['rata_rata'], 1) }}
+                    </p>
+                    @else
+                    <p class="text-xl font-bold text-gray-300">-</p>
                     @endif
                 </div>
-                <h3 class="font-bold text-gray-800">{{ $n->tugas->judul }}</h3>
-                <p class="text-xs text-gray-400 mt-0.5">{{ $n->tugas->guru->nama_lengkap }} · Semester {{ $n->tugas->semester }} · {{ $n->tugas->tahun_ajaran }}</p>
-
-                @if($n->catatan)
-                <div class="mt-3 bg-gray-50 rounded-xl px-4 py-2.5">
-                    <p class="text-xs font-medium text-gray-500 mb-0.5">Catatan Guru</p>
-                    <p class="text-sm text-gray-700 italic">{{ $n->catatan }}</p>
-                </div>
-                @endif
-
-                <p class="text-xs text-gray-400 mt-2">Dinilai {{ $n->updated_at->format('d M Y') }}</p>
             </div>
         </div>
-    </div>
+    </a>
     @endforeach
-
-    {{-- Rata-rata --}}
-    <div class="bg-primary rounded-2xl p-5 text-white">
-        <p class="text-primary-light text-sm">Rata-rata Nilai</p>
-        <p class="text-4xl font-bold mt-1">{{ number_format($nilaiList->avg('nilai'), 1) }}</p>
-        <p class="text-primary-light text-xs mt-1">dari {{ $nilaiList->count() }} tugas dinilai</p>
-    </div>
 </div>
-@endif
 @endsection

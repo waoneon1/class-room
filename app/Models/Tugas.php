@@ -18,8 +18,7 @@ class Tugas extends Model
         'deskripsi',
         'file_tugas',
         'deadline',
-        'semester',
-        'tahun_ajaran',
+        'periode_id',
     ];
 
     protected function casts(): array
@@ -42,5 +41,15 @@ class Tugas extends Model
     public function pengumpulan()
     {
         return $this->hasMany(Pengumpulan::class);
+    }
+
+    public function periode()
+    {
+        return $this->belongsTo(Periode::class);
+    }
+
+    public function kelas()
+    {
+        return $this->belongsToMany(Kelas::class, 'kelas_tugas');
     }
 }

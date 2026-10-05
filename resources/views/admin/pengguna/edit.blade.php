@@ -36,15 +36,26 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
-                    <select name="role" id="roleSelect"
+                    <select name="role" id="role"
                         class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary @error('role') border-red-400 @enderror"
-                        required onchange="toggleKelas(this.value)">
+                        required onchange="toggleFields()">
                         <option value="admin" {{ old('role', $pengguna->role) === 'admin' ? 'selected' : '' }}>Admin</option>
                         <option value="guru"  {{ old('role', $pengguna->role) === 'guru'  ? 'selected' : '' }}>Guru</option>
                         <option value="siswa" {{ old('role', $pengguna->role) === 'siswa' ? 'selected' : '' }}>Siswa</option>
                     </select>
                     @error('role')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
+            </div>
+
+            <div id="tipeGuruField" class="{{ old('role', $pengguna->role) === 'guru' ? '' : 'hidden' }}">
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Tipe Guru <span class="text-red-500">*</span></label>
+                <select name="tipe_guru" id="tipe_guru" onchange="toggleFields()"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary @error('tipe_guru') border-red-400 @enderror">
+                    <option value="">Pilih tipe guru</option>
+                    <option value="wali" {{ old('tipe_guru', $pengguna->tipe_guru) === 'wali' ? 'selected' : '' }}>Guru Wali Kelas</option>
+                    <option value="mapel" {{ old('tipe_guru', $pengguna->tipe_guru) === 'mapel' ? 'selected' : '' }}>Guru Bidang Studi</option>
+                </select>
+                @error('tipe_guru')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
 
             <div>
@@ -55,19 +66,34 @@
                 @error('email')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
 
-            <div id="kelasField" class="{{ old('role', $pengguna->role) === 'siswa' ? '' : 'hidden' }}">
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">Kelas</label>
-                <select name="kelas_id"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary @error('kelas_id') border-red-400 @enderror">
-                    <option value="">Pilih kelas</option>
+            <div id="kelasField" class="{{ (old('role', $pengguna->role) === 'siswa' || old('role', $pengguna->role) === 'guru') ? '' : 'hidden' }}">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Kelas <span class="text-red-500">*</span></label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     @foreach($kelas as $k)
-                        <option value="{{ $k->id }}" {{ old('kelas_id', $pengguna->kelas_id) == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
+                        @php
+                            $isSelected = false;
+                            if (old('kelas_id')) {
+                                $isSelected = in_array($k->id, old('kelas_id'));
+                            } else {
+                                if ($pengguna->role === 'siswa') {
+                                    $isSelected = $pengguna->kelas?->id == $k->id;
+                                } elseif ($pengguna->role === 'guru') {
+                                    $isSelected = $pengguna->mengajarKelas->contains($k->id);
+                                }
+                            }
+                        @endphp
+                    <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" name="kelas_id[]" value="{{ $k->id }}"
+                            class="rounded text-primary focus:ring-primary w-4 h-4"
+                            {{ $isSelected ? 'checked' : '' }}>
+                        <span class="text-sm text-gray-700 font-medium">{{ $k->nama_kelas }}</span>
+                    </label>
                     @endforeach
-                </select>
+                </div>
                 @error('kelas_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Password Baru <span class="text-gray-400 font-normal">(opsional)</span></label>
                     <input type="password" name="password"
@@ -98,8 +124,20 @@
 </div>
 
 <script>
-function toggleKelas(role) {
-    document.getElementById('kelasField').classList.toggle('hidden', role !== 'siswa');
+function toggleFields() {
+    const role = document.getElementById('role').value;
+    
+    const showKelas = role === 'siswa' || role === 'guru';
+    
+    document.getElementById('kelasField').classList.toggle('hidden', !showKelas);
+    document.getElementById('tipeGuruField').classList.toggle('hidden', role !== 'guru');
+    
+    // Require tipe_guru only if role is guru
+    if(document.querySelector('select[name="tipe_guru"]')) {
+        document.querySelector('select[name="tipe_guru"]').required = (role === 'guru');
+    }
 }
+// Init form on load if old value exists
+window.onload = () => toggleFields();
 </script>
 @endsection

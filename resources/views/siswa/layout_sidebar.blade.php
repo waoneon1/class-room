@@ -3,38 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Siswa') — SDN Ketintang II</title>
+    <title>@yield('title', 'Siswa') — SDN Ketintang Surabaya</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#F7F7F7] min-h-screen flex flex-col">
+<body class="bg-[#F7F7F7] min-h-screen flex flex-col font-sans">
+
+    @php
+        $activeSubjectId = request('subject_id');
+        if (!$activeSubjectId && isset($mataPelajaran) && $mataPelajaran instanceof \App\Models\MataPelajaran) {
+            $activeSubjectId = $mataPelajaran->id;
+        } elseif (!$activeSubjectId && isset($materi) && $materi instanceof \App\Models\Materi) {
+            $activeSubjectId = $materi->mata_pelajaran_id;
+        } elseif (!$activeSubjectId && isset($tugas) && $tugas instanceof \App\Models\Tugas) {
+            $activeSubjectId = $tugas->mata_pelajaran_id;
+        }
+    @endphp
 
     {{-- Topbar --}}
-    <div class="bg-primary h-16 flex items-center px-4 md:px-6 gap-4 fixed top-0 left-0 right-0 z-20">
-        {{-- Hamburger (mobile only) --}}
-        <button id="sidebarToggle" class="md:hidden text-white p-1 rounded-lg hover:bg-white/10 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-        </button>
+    <div class="bg-primary h-16 flex items-center px-4 md:px-6 gap-4 fixed top-0 left-0 right-0 z-20 justify-between">
+        
+        {{-- Left: Logo & School & Hamburger --}}
         <div class="flex items-center gap-3 shrink-0">
-            <div class="w-8 h-8 bg-white/20 rounded-lg items-center justify-center hidden md:flex">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button id="sidebarToggle" class="md:hidden text-white p-1 rounded-lg hover:bg-white/10 shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <div class="w-8 h-8 bg-white/20 rounded-xl items-center justify-center hidden md:flex">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>
             </div>
-            <span class="text-white font-bold text-base">Classroom</span>
-        </div>
-        <div class="flex-1">
-            <span class="text-primary-light text-sm hidden md:inline">SDN Ketintang II Surabaya</span>
-        </div>
-        <div class="flex items-center gap-2 md:gap-3">
-            <div class="text-right hidden sm:block">
-                <p class="text-white text-sm font-medium">{{ auth()->user()->nama_lengkap }}</p>
-                <p class="text-primary-light text-xs">Siswa</p>
+            <div class="flex flex-col">
+                <span class="text-white font-bold text-base leading-tight">Classroom</span>
+                <span class="text-primary-light text-xs font-medium hidden md:block">SDN Ketintang Surabaya</span>
             </div>
-            <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+        </div>
+
+        {{-- Right: Profile --}}
+        <div class="flex items-center gap-2 md:gap-3 shrink-0 relative group cursor-pointer border border-primary-light/30 rounded-full pl-1 pr-3 py-1 hover:bg-white/10 transition-colors">
+            <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
                 {{ strtoupper(substr(auth()->user()->nama_lengkap, 0, 1)) }}
+            </div>
+            <span class="text-white text-xs font-medium hidden sm:block">{{ auth()->user()->nama_lengkap }}</span>
+
+            {{-- Dropdown Logout --}}
+            <div class="absolute right-0 top-full mt-2 w-32 bg-white rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all border border-gray-100">
+                <form method="POST" action="/logout">
+                    @csrf
+                    <button type="submit" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 rounded-xl font-semibold">Keluar</button>
+                </form>
             </div>
         </div>
     </div>
@@ -44,57 +63,44 @@
 
     <div class="flex pt-16 min-h-screen">
         {{-- Sidebar --}}
-        <aside id="sidebar" class="w-[220px] bg-primary min-h-screen fixed left-0 top-16 bottom-0 z-20 flex flex-col py-6 -translate-x-full md:translate-x-0 transition-all duration-200">
+        <aside id="sidebar" class="w-[220px] bg-primary min-h-screen fixed left-0 top-16 bottom-0 z-20 flex flex-col py-6 -translate-x-full md:translate-x-0 transition-all duration-200 border-t border-primary-light/20">
             <nav class="flex-1 px-3 space-y-1">
                 <a href="{{ route('siswa.dashboard') }}"
                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('siswa.dashboard') ? 'bg-white/20 text-white font-semibold' : 'text-primary-light hover:bg-white/10 hover:text-white' }}">
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                     </svg>
                     <span class="sidebar-label text-sm">Home</span>
                 </a>
 
-                <a href="{{ route('siswa.materi.index') }}"
+                @if($activeSubjectId)
+                <a href="{{ route('siswa.materi.index', ['subject_id' => $activeSubjectId]) }}"
                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('siswa.materi*') ? 'bg-white/20 text-white font-semibold' : 'text-primary-light hover:bg-white/10 hover:text-white' }}">
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                     </svg>
                     <span class="sidebar-label text-sm">Materi</span>
                 </a>
 
-                <a href="{{ route('siswa.tugas.index') }}"
+                <a href="{{ route('siswa.tugas.index', ['subject_id' => $activeSubjectId]) }}"
                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('siswa.tugas*') ? 'bg-white/20 text-white font-semibold' : 'text-primary-light hover:bg-white/10 hover:text-white' }}">
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                     </svg>
                     <span class="sidebar-label text-sm">Tugas</span>
                 </a>
+                @endif
 
-                <a href="{{ route('siswa.nilai.index') }}"
+                <a href="{{ $activeSubjectId ? route('siswa.nilai.index', ['subject_id' => $activeSubjectId]) : route('siswa.nilai.index') }}"
                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('siswa.nilai*') ? 'bg-white/20 text-white font-semibold' : 'text-primary-light hover:bg-white/10 hover:text-white' }}">
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
                     <span class="sidebar-label text-sm">Nilai</span>
                 </a>
             </nav>
 
             <div class="px-3 mt-4 space-y-1">
-                <form method="POST" action="/logout">
-                    @csrf
-                    <button type="submit"
-                        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-primary-light hover:bg-white/10 hover:text-white transition-colors">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-                        <span class="sidebar-label text-sm">Keluar</span>
-                    </button>
-                </form>
                 {{-- Collapse toggle (desktop only) --}}
                 <button id="collapseBtn" onclick="toggleCollapse()"
                     class="hidden md:flex w-full items-center gap-3 px-4 py-2.5 rounded-xl text-primary-light hover:bg-white/10 hover:text-white transition-colors">
@@ -107,7 +113,7 @@
         </aside>
 
         {{-- Main Content --}}
-        <main id="mainContent" class="flex-1 ml-0 md:ml-[220px] p-4 md:p-6">
+        <main id="mainContent" class="flex-1 ml-0 md:ml-[220px] p-4 md:p-6 transition-all duration-200">
             @if(session('success'))
                 <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3 mb-5 flex items-center gap-2">
                     <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -166,7 +172,6 @@
         applyCollapse();
     }
 
-    // Apply on load (desktop only)
     if (window.innerWidth >= 768) applyCollapse();
 </script>
 </body>
