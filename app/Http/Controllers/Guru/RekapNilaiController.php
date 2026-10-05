@@ -18,10 +18,16 @@ class RekapNilaiController extends Controller
         $kelasGuru  = auth()->user()->mengajarKelas;
         $kelasId    = $request->kelas_id;
 
-        $querySiswa = \App\Models\User::role('siswa')->whereIn('kelas_id', $kelasGuru->pluck('id'));
-        if ($kelasId) {
-            $querySiswa->where('kelas_id', $kelasId);
-        }
+        $querySiswa = \App\Models\User::role('siswa')
+            ->whereHas('rombel', function($q) use ($kelasGuru, $kelasId, $periodeId) {
+                if ($kelasId) {
+                    $q->where('kelas_id', $kelasId);
+                } else {
+                    $q->whereIn('kelas_id', $kelasGuru->pluck('id'));
+                }
+                $q->where('periode_id', $periodeId);
+            });
+            
         $siswaList = $querySiswa->orderBy('nama_lengkap')->get();
 
         $pengumpulan = Pengumpulan::with(['tugas.mataPelajaran'])
