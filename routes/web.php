@@ -19,6 +19,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::resource('kelas', Admin\KelasController::class);
     Route::resource('mata-pelajaran', Admin\MataPelajaranController::class);
     Route::resource('periode', Admin\PeriodeController::class);
+    Route::resource('jadwal-mengajar', Admin\JadwalMengajarController::class);
     Route::get('rekap-nilai', [Admin\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');
 });
 

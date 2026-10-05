@@ -19,6 +19,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'tipe_guru',
     ];
 
     protected $hidden = [
@@ -58,6 +59,11 @@ class User extends Authenticatable
     public function pengumpulan()
     {
         return $this->hasMany(Pengumpulan::class, 'siswa_id');
+    }
+
+    public function mengajarKelas()
+    {
+        return $this->belongsToMany(Kelas::class, 'guru_kelas', 'user_id', 'kelas_id')->withTimestamps();
     }
 
     public function getKelasAttribute()

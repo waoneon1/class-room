@@ -33,14 +33,45 @@ class UserSeeder extends Seeder
         ]);
         $admin->assignRole('admin');
 
-        $guru = User::create([
+        $guruBudi = User::create([
             'nama_lengkap' => 'Budi Santoso',
             'username'     => 'guru',
             'email'        => 'guru@sekolah.com',
             'password'     => bcrypt('password'),
             'role'         => 'guru',
+            'tipe_guru'    => 'wali',
         ]);
-        $guru->assignRole('guru');
+        $guruBudi->assignRole('guru');
+
+        $guruBing = User::create([
+            'nama_lengkap' => 'Guru Bahasa Inggris',
+            'username'     => 'bing',
+            'email'        => 'guru.inggris@sekolah.com',
+            'password'     => bcrypt('password'),
+            'role'         => 'guru',
+            'tipe_guru'    => 'mapel',
+        ]);
+        $guruBing->assignRole('guru');
+
+        $guruAgama = User::create([
+            'nama_lengkap' => 'Guru Pendidikan Agama',
+            'username'     => 'agama',
+            'email'        => 'guru.agama@sekolah.com',
+            'password'     => bcrypt('password'),
+            'role'         => 'guru',
+            'tipe_guru'    => 'mapel',
+        ]);
+        $guruAgama->assignRole('guru');
+
+        $guruPenjas = User::create([
+            'nama_lengkap' => 'Guru Pendidikan Jasmani',
+            'username'     => 'penjas',
+            'email'        => 'guru.penjas@sekolah.com',
+            'password'     => bcrypt('password'),
+            'role'         => 'guru',
+            'tipe_guru'    => 'mapel',
+        ]);
+        $guruPenjas->assignRole('guru');
         
         $kelas = Kelas::first();
         $mapel = MataPelajaran::first();
@@ -50,7 +81,8 @@ class UserSeeder extends Seeder
         ]);
 
         if ($kelas && $mapel && $periode) {
-            $guru->jadwalMengajar()->create([
+            $guruBudi->mengajarKelas()->sync([$kelas->id]);
+            $guruBudi->jadwalMengajar()->create([
                 'kelas_id' => $kelas->id,
                 'mata_pelajaran_id' => $mapel->id,
                 'periode_id' => $periode->id,

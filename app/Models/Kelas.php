@@ -8,8 +8,11 @@ class Kelas extends Model
 {
     protected $fillable = ['nama_kelas'];
 
-    public function users()
+    public function siswa()
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class, 'siswa_kelas_periode', 'kelas_id', 'user_id')
+                    ->withPivot('periode_id')
+                    ->where('role', 'siswa')
+                    ->withTimestamps();
     }
 }

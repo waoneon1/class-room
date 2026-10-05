@@ -80,6 +80,14 @@
                     <span class="sidebar-label text-sm">Mata Pelajaran</span>
                 </a>
 
+                <a href="{{ route('admin.jadwal-mengajar.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('admin.jadwal-mengajar*') ? 'bg-white/20 text-white font-semibold' : 'text-primary-light hover:bg-white/10 hover:text-white' }}">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="sidebar-label text-sm">Jadwal Mengajar</span>
+                </a>
+
                 <a href="{{ route('admin.rekap-nilai.index') }}"
                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('admin.rekap-nilai*') ? 'bg-white/20 text-white font-semibold' : 'text-primary-light hover:bg-white/10 hover:text-white' }}">
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -3,18 +3,33 @@
 @section('title', 'Kelola Pengguna')
 
 @section('content')
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
     <div>
         <h1 class="text-xl font-bold text-gray-800">Kelola Pengguna</h1>
         <p class="text-sm text-gray-500 mt-0.5">Daftar seluruh pengguna sistem</p>
     </div>
-    <a href="{{ route('admin.pengguna.create') }}"
-       class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Tambah Pengguna
-    </a>
+    <div class="flex items-center gap-3 w-full md:w-auto">
+        <form action="{{ route('admin.pengguna.index') }}" method="GET" class="flex flex-1 md:flex-none gap-2">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama/username..." 
+                class="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary w-full md:w-64">
+            <select name="role" class="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white" onchange="this.form.submit()">
+                <option value="">Semua Role</option>
+                <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                <option value="guru" {{ request('role') == 'guru' ? 'selected' : '' }}>Guru</option>
+                <option value="siswa" {{ request('role') == 'siswa' ? 'selected' : '' }}>Siswa</option>
+            </select>
+            <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-xl transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </button>
+        </form>
+        <a href="{{ route('admin.pengguna.create') }}"
+           class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2 shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span class="hidden sm:inline">Tambah Pengguna</span>
+        </a>
+    </div>
 </div>
 
 <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -79,10 +94,15 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="px-5 py-10 text-center text-gray-400 text-sm">Belum ada pengguna.</td>
+                <td colspan="6" class="px-5 py-8 text-center text-gray-500">Tidak ada data pengguna ditemukan.</td>
             </tr>
             @endforelse
         </tbody>
     </table>
+    @if($pengguna->hasPages())
+    <div class="px-5 py-4 border-t border-gray-100">
+        {{ $pengguna->links() }}
+    </div>
+    @endif
 </div>
 @endsection

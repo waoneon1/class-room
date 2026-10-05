@@ -10,7 +10,14 @@ class KelasController extends Controller
 {
     public function index()
     {
-        $kelas = Kelas::withCount('users')->orderBy('nama_kelas')->get();
+        $periodeId = \App\Models\Periode::where('is_active', true)->value('id');
+        
+        $kelas = Kelas::withCount(['siswa' => function($q) use ($periodeId) {
+            if ($periodeId) {
+                $q->where('siswa_kelas_periode.periode_id', $periodeId);
+            }
+        }])->orderBy('nama_kelas')->get();
+        
         return view('admin.kelas.index', compact('kelas'));
     }
 
