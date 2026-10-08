@@ -32,6 +32,7 @@ Route::prefix('guru')->name('guru.')->middleware(['auth', 'role:guru'])->group(f
     Route::get('pengumpulan/{pengumpulan}', [Guru\PengumpulanController::class, 'show'])->name('pengumpulan.show');
     Route::post('pengumpulan/{pengumpulan}/nilai', [Guru\PengumpulanController::class, 'nilai'])->name('pengumpulan.nilai');
     Route::get('rekap-nilai', [Guru\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');
+    Route::get('rekap-nilai/detail', [Guru\RekapNilaiController::class, 'detail'])->name('rekap-nilai.detail');
 });
 
 // Siswa

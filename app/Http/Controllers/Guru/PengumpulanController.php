@@ -18,9 +18,17 @@ class PengumpulanController extends Controller
             ->where('tugas_id', $tugas->id)
             ->get()
             ->keyBy('siswa_id');
+            
+        $periodeId = $tugas->periode_id;
 
-        $totalSiswa = User::role('siswa')->whereIn('kelas_id', $tugas->kelas->pluck('id'))->count();
-        $semuaSiswa = User::role('siswa')->whereIn('kelas_id', $tugas->kelas->pluck('id'))->orderBy('nama_lengkap')->get();
+        $semuaSiswaQuery = User::role('siswa')
+            ->whereHas('rombel', function($q) use ($tugas, $periodeId) {
+                $q->whereIn('kelas_id', $tugas->kelas->pluck('id'))
+                  ->where('periode_id', $periodeId);
+            });
+
+        $totalSiswa = (clone $semuaSiswaQuery)->count();
+        $semuaSiswa = $semuaSiswaQuery->orderBy('nama_lengkap')->get();
 
         return view('guru.pengumpulan.index', compact('tugas', 'pengumpulan', 'totalSiswa', 'semuaSiswa'));
     }
