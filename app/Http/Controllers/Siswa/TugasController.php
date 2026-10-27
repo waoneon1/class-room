@@ -14,8 +14,14 @@ class TugasController extends Controller
     public function index()
     {
         if (!request()->has('subject_id')) {
+            if (session()->has('active_subject_id')) {
+                return redirect()->route('siswa.tugas.index', ['subject_id' => session('active_subject_id')]);
+            }
             return redirect()->route('siswa.dashboard')->with('error', 'Silakan pilih mata pelajaran terlebih dahulu.');
         }
+
+        $subjectId = request('subject_id');
+        session(['active_subject_id' => $subjectId]);
 
         /** @var \App\Models\User $user */
         $user = auth()->user();
@@ -24,8 +30,6 @@ class TugasController extends Controller
         
         $rombel = $user->rombel()->wherePivot('periode_id', $periodeId)->first();
         $kelasId = $rombel ? $rombel->id : null;
-        
-        $subjectId = request('subject_id');
 
         $tugasList = Tugas::with(['guru', 'mataPelajaran'])
             ->where('mata_pelajaran_id', $subjectId)
@@ -49,7 +53,9 @@ class TugasController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
         
-        $tugas       = Tugas::with(['guru', 'mataPelajaran'])->findOrFail($id);
+        $tugas = Tugas::with(['guru', 'mataPelajaran'])->findOrFail($id);
+        session(['active_subject_id' => $tugas->mata_pelajaran_id]);
+
         $pengumpulan = Pengumpulan::where('tugas_id', $id)
             ->where('siswa_id', $user->id)
             ->with('files')
