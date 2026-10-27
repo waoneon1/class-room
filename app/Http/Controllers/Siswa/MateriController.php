@@ -10,8 +10,14 @@ class MateriController extends Controller
     public function index()
     {
         if (!request()->has('subject_id')) {
+            if (session()->has('active_subject_id')) {
+                return redirect()->route('siswa.materi.index', ['subject_id' => session('active_subject_id')]);
+            }
             return redirect()->route('siswa.dashboard')->with('error', 'Silakan pilih mata pelajaran terlebih dahulu.');
         }
+
+        $subjectId = request('subject_id');
+        session(['active_subject_id' => $subjectId]);
 
         $periodeId = \App\Models\Periode::where('is_active', true)->value('id');
         
@@ -20,8 +26,6 @@ class MateriController extends Controller
         
         $rombel = $user->rombel()->wherePivot('periode_id', $periodeId)->first();
         $kelasId = $rombel ? $rombel->id : null;
-        
-        $subjectId = request('subject_id');
 
         $materi = Materi::with(['guru', 'mataPelajaran'])
             ->where('mata_pelajaran_id', $subjectId)
@@ -37,6 +41,7 @@ class MateriController extends Controller
     public function show($id)
     {
         $materi = Materi::with(['guru', 'mataPelajaran'])->findOrFail($id);
+        session(['active_subject_id' => $materi->mata_pelajaran_id]);
         return view('siswa.materi.show', compact('materi'));
     }
 }

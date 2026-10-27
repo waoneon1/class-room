@@ -42,6 +42,7 @@ class DashboardController extends Controller
 
     public function subject($id)
     {
+        session(['active_subject_id' => $id]);
         $periodeId = \App\Models\Periode::where('is_active', true)->value('id');
         
         /** @var \App\Models\User $user */
